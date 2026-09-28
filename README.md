@@ -8,7 +8,7 @@
 
 [English](README_en.md) · [技能入口](SKILL.md) · [来源与修改说明](UPSTREAM.md) · [Apache-2.0](LICENSE)
 
-**`clawyi-com/china-market-data`** 是面向 AI 助手与 Python 用户的中国证券市场取数 Skill / CLI：覆盖 A 股、指数、ETF、期货与宏观等数据，把自然语言需求映射到可执行命令，并标明时间戳、覆盖范围、字段含义和失败降级方式。
+**`clawyi-com/china-market-data`** 是面向中国用户的 **中国市场数据 / 中国股票市场数据 Skill**：覆盖 A 股行情、K 线、逐笔、研报、资金流、公告、ETF、期货与宏观数据，给 Claude Code / AI Agent / Python CLI 直接调用，并标明时间戳、覆盖范围、字段含义和失败降级方式。
 
 > 这不是投顾建议，也不是付费数据商 SDK。
 

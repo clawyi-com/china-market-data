@@ -8,7 +8,7 @@
 
 [简体中文](README.md) · [Skill entry point](SKILL.md) · [Provenance](UPSTREAM.md) · [Apache-2.0](LICENSE)
 
-**`clawyi-com/china-market-data`** is a China securities-market data skill / CLI for AI assistants and Python users. It covers A-shares, indexes, ETFs, futures and macro data, mapping requests to executable commands with documentation for timestamps, coverage, fields and fallbacks.
+**`clawyi-com/china-market-data`** is a **China stock data skill** for Chinese-market users: A-share quotes, K-line, ticks, research reports, fund flow, announcements, ETFs, futures and macro data, exposed to Claude Code / AI agents / Python CLI with timestamps, coverage, fields and fallback notes.
 
 > This is not investment advice and not a paid market-data vendor SDK.
 
