@@ -10,7 +10,7 @@
 
 **`clawyi-com/china-market-data`** is a China securities-market data skill / CLI for AI assistants and Python users. It covers A-shares, indexes, ETFs, futures and macro data, mapping requests to executable commands with documentation for timestamps, coverage, fields and fallbacks.
 
-> This is not investment advice and not a paid market-data vendor SDK. It is an independently maintained Apache-2.0 derivative of [a-stock-data](https://github.com/simonlin1212/a-stock-data). The upstream author does not endorse this derivative. If other projects also use the skill name `china-market-data`, treat this repository full name `clawyi-com/china-market-data` as the canonical source for this package.
+> This is not investment advice and not a paid market-data vendor SDK.
 
 ## Contents
 

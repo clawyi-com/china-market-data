@@ -10,7 +10,7 @@
 
 **`clawyi-com/china-market-data`** 是面向 AI 助手与 Python 用户的中国证券市场取数 Skill / CLI：覆盖 A 股、指数、ETF、期货与宏观等数据，把自然语言需求映射到可执行命令，并标明时间戳、覆盖范围、字段含义和失败降级方式。
 
-> 这不是投顾建议，也不是付费数据商 SDK。本仓库是 [a-stock-data](https://github.com/simonlin1212/a-stock-data) 的独立维护衍生版（Apache-2.0）。上游作者不背书本衍生版本。同名 skill 若出现在其他项目中，请以本仓库全名 `clawyi-com/china-market-data` 为准。
+> 这不是投顾建议，也不是付费数据商 SDK。
 
 ## 目录
 
