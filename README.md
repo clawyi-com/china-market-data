@@ -4,6 +4,7 @@
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.9%2B-green.svg)](requirements.txt)
 [![Release](https://img.shields.io/github/v/release/clawyi-com/china-market-data?include_prereleases&label=release)](https://github.com/clawyi-com/china-market-data/releases)
+[![skills.sh](https://img.shields.io/badge/skills.sh-china--market--data-111111.svg)](https://skills.sh/clawyi-com/china-market-data/china-market-data)
 [![Repo](https://img.shields.io/badge/github-clawyi--com%2Fchina--market--data-111111.svg)](https://github.com/clawyi-com/china-market-data)
 
 [English](README_en.md) · [技能入口](SKILL.md) · [来源与修改说明](UPSTREAM.md) · [Apache-2.0](LICENSE)
@@ -26,17 +27,11 @@
 ## 30 秒开始
 
 ```bash
-git clone https://github.com/clawyi-com/china-market-data.git ~/.claude/skills/china-market-data
-cd ~/.claude/skills/china-market-data
-python3 -m venv .venv
-PIP_USER=0 .venv/bin/python -m pip install -r requirements.txt
-python3 scripts/run.py --check
-
-# 标准库即可：上证指数 / 平安银行 / 沪深300 ETF
-python3 scripts/tencent_quote.py sh000001 sz000001 510300
+# 自动识别 Cursor、Claude Code、Codex 等宿主并安装
+npx skills add clawyi-com/china-market-data -g
 ```
 
-目标目录必须命名为 `china-market-data`，与 `SKILL.md` 中的 `name` 一致，否则部分 Agent Skills 宿主可能加载失败或注册成错误名称。
+安装后可直接向 AI 助手提问，例如“查询贵州茅台实时行情”“获取沪深 300 最近一年 K 线”。腾讯报价等标准库入口无需额外 Python 包；使用完整数据能力前，再按[安装 Python 依赖](#2-安装-python-依赖)创建虚拟环境。
 
 ## 能做什么
 
@@ -61,29 +56,44 @@ python3 scripts/tencent_quote.py sh000001 sz000001 510300
 
 ## 安装
 
-需要 Python 3.9+；建议使用已验证的 Python 3.12。安装 Python 包时需要访问包源，实际取数时需要访问相应数据源。
+### 1. 安装 Skill（推荐）
 
-将技能发布包解压为 `china-market-data/`，或使用本仓库检出。必须保留 `SKILL.md`、`scripts/`、`references/`、`requirements.txt`、`LICENSE`、`NOTICE` 和 `UPSTREAM.md`，不能只复制一个 Markdown 文件。
-
-```bash
-git clone https://github.com/clawyi-com/china-market-data.git ~/.claude/skills/china-market-data
-```
-
-macOS / Linux，在技能根目录执行：
+需要 Node.js / npm。Skills CLI 以 GitHub 为技能来源，不要求本仓库发布 npm 包：
 
 ```bash
-python3 -m venv .venv
-PIP_USER=0 .venv/bin/python -m pip install -r requirements.txt
-python3 scripts/run.py --check
+# 交互式全局安装，自动识别已安装的 Agent
+npx skills add clawyi-com/china-market-data -g
+
+# 指定宿主并跳过确认
+npx skills add clawyi-com/china-market-data -g -y --agent cursor
+
+# 只查看仓库中可安装的技能
+npx skills add clawyi-com/china-market-data --list
 ```
 
-Windows PowerShell，在技能根目录执行：
+支持的安装源可在 [skills.sh](https://skills.sh/clawyi-com/china-market-data/china-market-data) 查看。默认不加 `-g` 时安装到当前项目；加 `-g` 后全局可用。Skills CLI 只安装 `SKILL.md`、`scripts/` 和 `references/` 等技能文件，不会自动安装 Python 依赖。
+
+### 2. 安装 Python 依赖
+
+需要 Python 3.9+；建议使用已验证的 Python 3.12。`npx skills` 全局安装的规范副本默认位于 `~/.agents/skills/china-market-data`。
+
+macOS / Linux：
+
+```bash
+SKILL_DIR="$HOME/.agents/skills/china-market-data"
+python3 -m venv "$SKILL_DIR/.venv"
+PIP_USER=0 "$SKILL_DIR/.venv/bin/python" -m pip install -r "$SKILL_DIR/requirements.txt"
+"$SKILL_DIR/.venv/bin/python" "$SKILL_DIR/scripts/run.py" --check
+```
+
+Windows PowerShell：
 
 ```powershell
-py -3 -m venv .venv
+$SkillDir = "$env:USERPROFILE\.agents\skills\china-market-data"
+py -3 -m venv "$SkillDir\.venv"
 $env:PIP_USER = "0"
-.\.venv\Scripts\python.exe -m pip install -r requirements.txt
-py -3 scripts/run.py --check
+& "$SkillDir\.venv\Scripts\python.exe" -m pip install -r "$SkillDir\requirements.txt"
+& "$SkillDir\.venv\Scripts\python.exe" "$SkillDir\scripts\run.py" --check
 ```
 
 `--check` 检查全部列出的依赖，不请求行情。部分功能只需少量依赖；例如腾讯报价仅用标准库，可以直接运行而不安装全部包。依赖使用版本范围，尚未为所有系统锁定完整依赖组合；Windows 命令未经过完整平台实测。
@@ -91,6 +101,20 @@ py -3 scripts/run.py --check
 多数业务 CLI 会使用技能目录内的 `.venv`；`run.py` 也可统一启动脚本。不会自动安装依赖或修改全局 Python。作为 Python 库导入时，调用方负责选择正确解释器。移动目录或换机器后应重新创建 `.venv`，不要复制已有虚拟环境。
 
 Windows 通常没有 `python3` 命令，下文示例中的 `python3` 请换成 `py -3`；未安装 py 启动器时用 `python`。输出流编码无法表示中文时（如英文 Windows 管道默认的 cp1252），脚本自动改用 UTF-8 输出，读取方应按 UTF-8 解码。
+
+### 3. 开发者安装
+
+需要修改代码或保留完整 Git 历史时使用：
+
+```bash
+git clone https://github.com/clawyi-com/china-market-data.git
+cd china-market-data
+python3 -m venv .venv
+PIP_USER=0 .venv/bin/python -m pip install -r requirements.txt
+python3 scripts/run.py --check
+```
+
+手动复制或解压时，目标目录必须命名为 `china-market-data`，并保留 `SKILL.md`、`scripts/`、`references/`、`requirements.txt`、`LICENSE`、`NOTICE` 和 `UPSTREAM.md`；不能只复制一个 Markdown 文件。
 
 ### 技能目录只读时
 
@@ -106,7 +130,7 @@ Windows 对应为 `py -3 -m venv $env:USERPROFILE\.venvs\china-market-data`，�
 
 ### 在 AI 助手中使用
 
-把整个目录放到宿主支持的技能目录，例如 Claude Code 的 `~/.claude/skills/china-market-data/`，或 Codex 默认的 `~/.codex/skills/china-market-data/`；自定义配置以宿主设置为准。其他助手需要能读取技能文件并执行本地 Python。仅支持聊天、不能执行脚本的环境不能直接取数。
+优先用 `npx skills add` 自动识别 Cursor、Claude Code、Codex 等宿主并安装到正确位置。需要手动安装时，再把整个目录复制到宿主支持的技能目录；其他助手需要能读取技能文件并执行本地 Python。仅支持聊天、不能执行脚本的环境不能直接取数。
 
 技能本身不依赖可易、某个 agent ID 或 `CLAUDE.md`。仓库中的 `CLAUDE.md` 是可选研究助手指引，不是执行 CLI 的必要条件。更新时同时更新脚本与文档；各 agent 的独立安装副本不会自动同步。
 

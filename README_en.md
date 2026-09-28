@@ -4,6 +4,7 @@
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.9%2B-green.svg)](requirements.txt)
 [![Release](https://img.shields.io/github/v/release/clawyi-com/china-market-data?include_prereleases&label=release)](https://github.com/clawyi-com/china-market-data/releases)
+[![skills.sh](https://img.shields.io/badge/skills.sh-china--market--data-111111.svg)](https://skills.sh/clawyi-com/china-market-data/china-market-data)
 [![Repo](https://img.shields.io/badge/github-clawyi--com%2Fchina--market--data-111111.svg)](https://github.com/clawyi-com/china-market-data)
 
 [简体中文](README.md) · [Skill entry point](SKILL.md) · [Provenance](UPSTREAM.md) · [Apache-2.0](LICENSE)
@@ -26,17 +27,11 @@
 ## 30-second start
 
 ```bash
-git clone https://github.com/clawyi-com/china-market-data.git ~/.claude/skills/china-market-data
-cd ~/.claude/skills/china-market-data
-python3 -m venv .venv
-PIP_USER=0 .venv/bin/python -m pip install -r requirements.txt
-python3 scripts/run.py --check
-
-# stdlib only: SSE Composite / Ping An Bank / CSI 300 ETF
-python3 scripts/tencent_quote.py sh000001 sz000001 510300
+# Detect Cursor, Claude Code, Codex and other supported hosts
+npx skills add clawyi-com/china-market-data -g
 ```
 
-The target directory must be named `china-market-data` to match the `name` in `SKILL.md`; otherwise some Agent Skills hosts may fail to load or register the skill under the wrong name.
+After installation, ask your AI assistant questions such as “fetch the latest Kweichow Moutai quote” or “get one year of CSI 300 candles.” Standard-library endpoints such as Tencent quotes need no extra Python packages. Set up the [Python dependencies](#2-install-python-dependencies) before using the full data-source catalog.
 
 ## Coverage
 
@@ -61,29 +56,44 @@ These changes do not guarantee provider availability or certify every AI host.
 
 ## Installation
 
-Python 3.9+ is required; Python 3.12 is the tested recommendation. Package installation requires package-index access; fetching data requires access to the relevant provider.
+### 1. Install the skill (recommended)
 
-Extract the skill release into `china-market-data/`, or clone this repository. Keep `SKILL.md`, `scripts/`, `references/`, `requirements.txt`, `LICENSE`, `NOTICE` and `UPSTREAM.md` together. A single Markdown download is insufficient.
+Node.js / npm is required. The Skills CLI uses GitHub as the skill source; this repository does not need to be published as an npm package:
 
 ```bash
-git clone https://github.com/clawyi-com/china-market-data.git ~/.claude/skills/china-market-data
+# Interactive global install; detects installed agents
+npx skills add clawyi-com/china-market-data -g
+
+# Target one host and skip confirmation
+npx skills add clawyi-com/china-market-data -g -y --agent cursor
+
+# Inspect available skills without installing
+npx skills add clawyi-com/china-market-data --list
 ```
 
-From the skill root on macOS / Linux:
+See the installable skill on [skills.sh](https://skills.sh/clawyi-com/china-market-data/china-market-data). Without `-g`, installation is scoped to the current project; `-g` makes it available globally. The Skills CLI installs files such as `SKILL.md`, `scripts/` and `references/`; it does not install Python dependencies.
+
+### 2. Install Python dependencies
+
+Python 3.9+ is required; Python 3.12 is the tested recommendation. The canonical copy from a global `npx skills` install is normally at `~/.agents/skills/china-market-data`.
+
+macOS / Linux:
 
 ```bash
-python3 -m venv .venv
-PIP_USER=0 .venv/bin/python -m pip install -r requirements.txt
-python3 scripts/run.py --check
+SKILL_DIR="$HOME/.agents/skills/china-market-data"
+python3 -m venv "$SKILL_DIR/.venv"
+PIP_USER=0 "$SKILL_DIR/.venv/bin/python" -m pip install -r "$SKILL_DIR/requirements.txt"
+"$SKILL_DIR/.venv/bin/python" "$SKILL_DIR/scripts/run.py" --check
 ```
 
 Windows PowerShell:
 
 ```powershell
-py -3 -m venv .venv
+$SkillDir = "$env:USERPROFILE\.agents\skills\china-market-data"
+py -3 -m venv "$SkillDir\.venv"
 $env:PIP_USER = "0"
-.\.venv\Scripts\python.exe -m pip install -r requirements.txt
-py -3 scripts/run.py --check
+& "$SkillDir\.venv\Scripts\python.exe" -m pip install -r "$SkillDir\requirements.txt"
+& "$SkillDir\.venv\Scripts\python.exe" "$SkillDir\scripts\run.py" --check
 ```
 
 The check imports all listed dependencies without requesting market data. Standard-library-only commands such as Tencent quotes do not require the entire dependency set. Requirements are version ranges, not a complete cross-platform lockfile. Windows has not been fully tested.
@@ -91,6 +101,20 @@ The check imports all listed dependencies without requesting market data. Standa
 Most business CLIs use the skill-local `.venv`; `run.py` can also launch scripts. Dependencies are not installed automatically and the global Python is not modified. When importing as a library, the caller chooses the interpreter. Recreate `.venv` after moving directories or machines; do not copy an existing virtualenv.
 
 Windows usually lacks `python3`; replace `python3` below with `py -3`, or `python` if the launcher is unavailable. When the output encoding cannot represent Chinese (for example cp1252 on English Windows pipes), scripts switch to UTF-8 output and consumers should decode as UTF-8.
+
+### 3. Developer installation
+
+Use a Git checkout when modifying code or retaining complete history:
+
+```bash
+git clone https://github.com/clawyi-com/china-market-data.git
+cd china-market-data
+python3 -m venv .venv
+PIP_USER=0 .venv/bin/python -m pip install -r requirements.txt
+python3 scripts/run.py --check
+```
+
+For manual copies or release archives, the target directory must be named `china-market-data`. Keep `SKILL.md`, `scripts/`, `references/`, `requirements.txt`, `LICENSE`, `NOTICE` and `UPSTREAM.md` together; a single Markdown download is insufficient.
 
 ### Read-only skill directory
 
@@ -106,7 +130,7 @@ On Windows: `py -3 -m venv $env:USERPROFILE\.venvs\china-market-data`, interpret
 
 ### Using with AI assistants
 
-Place the whole directory in a host skill path such as Claude Code `~/.claude/skills/china-market-data/` or Codex `~/.codex/skills/china-market-data/`. Other assistants must be able to read skill files and run local Python. Chat-only environments cannot fetch data directly.
+Prefer `npx skills add`, which detects hosts such as Cursor, Claude Code and Codex and installs to the appropriate location. For a manual fallback, copy the entire directory into a host-supported skill path. Other assistants must be able to read skill files and run local Python. Chat-only environments cannot fetch data directly.
 
 The skill does not depend on a specific agent ID or `CLAUDE.md`. Any `CLAUDE.md` is optional research guidance, not required to run CLIs. Update scripts and docs together; separately installed agent copies do not sync automatically.
 
