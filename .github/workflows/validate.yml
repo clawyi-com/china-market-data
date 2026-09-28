@@ -1,0 +1,47 @@
+name: Validate skill
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.9"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22.20.0"
+
+      - name: Compile Python sources
+        run: python -m compileall -q scripts tools tests
+
+      - name: Run offline smoke tests
+        run: python -m unittest discover -s tests -v
+
+      - name: Verify Skills CLI discovery
+        run: npx --yes skills@latest add . --list
+
+      - name: Verify release checksum
+        working-directory: dist
+        run: sha256sum --check china-market-data.zip.sha256
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: china-market-data-skill
+          path: |
+            dist/china-market-data.zip
+            dist/china-market-data.zip.sha256
+          if-no-files-found: error

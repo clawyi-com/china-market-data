@@ -28,7 +28,7 @@
 
 ```bash
 # Detect Cursor, Claude Code, Codex and other supported hosts
-npx skills add clawyi-com/china-market-data -g
+npx --yes skills@latest add clawyi-com/china-market-data -g
 ```
 
 After installation, ask your AI assistant questions such as “fetch the latest Kweichow Moutai quote” or “get one year of CSI 300 candles.” Standard-library endpoints such as Tencent quotes need no extra Python packages. Set up the [Python dependencies](#2-install-python-dependencies) before using the full data-source catalog.
@@ -58,42 +58,37 @@ These changes do not guarantee provider availability or certify every AI host.
 
 ### 1. Install the skill (recommended)
 
-Node.js / npm is required. The Skills CLI uses GitHub as the skill source; this repository does not need to be published as an npm package:
+Node.js 22.20+ / npm is required. The Skills CLI uses GitHub as the skill source; this repository does not need to be published as an npm package. Explicitly selecting `skills@latest` avoids older global-directory compatibility bugs:
 
 ```bash
 # Interactive global install; detects installed agents
-npx skills add clawyi-com/china-market-data -g
+npx --yes skills@latest add clawyi-com/china-market-data -g
 
 # Target one host and skip confirmation
-npx skills add clawyi-com/china-market-data -g -y --agent cursor
+npx --yes skills@latest add clawyi-com/china-market-data -g -y --agent cursor
 
 # Inspect available skills without installing
-npx skills add clawyi-com/china-market-data --list
+npx --yes skills@latest add clawyi-com/china-market-data --list
 ```
 
 See the installable skill on [skills.sh](https://skills.sh/clawyi-com/china-market-data/china-market-data). Without `-g`, installation is scoped to the current project; `-g` makes it available globally. The Skills CLI installs files such as `SKILL.md`, `scripts/` and `references/`; it does not install Python dependencies.
 
 ### 2. Install Python dependencies
 
-Python 3.9+ is required; Python 3.12 is the tested recommendation. The canonical copy from a global `npx skills` install is normally at `~/.agents/skills/china-market-data`.
+Python 3.9+ is required; Python 3.12 is the tested recommendation. The setup script creates a skill-local `.venv`, installs dependencies and runs an offline check. The canonical copy from a global `npx skills` install is normally at `~/.agents/skills/china-market-data`.
 
 macOS / Linux:
 
 ```bash
 SKILL_DIR="$HOME/.agents/skills/china-market-data"
-python3 -m venv "$SKILL_DIR/.venv"
-PIP_USER=0 "$SKILL_DIR/.venv/bin/python" -m pip install -r "$SKILL_DIR/requirements.txt"
-"$SKILL_DIR/.venv/bin/python" "$SKILL_DIR/scripts/run.py" --check
+python3 "$SKILL_DIR/tools/setup_env.py"
 ```
 
 Windows PowerShell:
 
 ```powershell
 $SkillDir = "$env:USERPROFILE\.agents\skills\china-market-data"
-py -3 -m venv "$SkillDir\.venv"
-$env:PIP_USER = "0"
-& "$SkillDir\.venv\Scripts\python.exe" -m pip install -r "$SkillDir\requirements.txt"
-& "$SkillDir\.venv\Scripts\python.exe" "$SkillDir\scripts\run.py" --check
+py -3 "$SkillDir\tools\setup_env.py"
 ```
 
 The check imports all listed dependencies without requesting market data. Standard-library-only commands such as Tencent quotes do not require the entire dependency set. Requirements are version ranges, not a complete cross-platform lockfile. Windows has not been fully tested.
@@ -109,9 +104,7 @@ Use a Git checkout when modifying code or retaining complete history:
 ```bash
 git clone https://github.com/clawyi-com/china-market-data.git
 cd china-market-data
-python3 -m venv .venv
-PIP_USER=0 .venv/bin/python -m pip install -r requirements.txt
-python3 scripts/run.py --check
+python3 tools/setup_env.py
 ```
 
 For manual copies or release archives, the target directory must be named `china-market-data`. Keep `SKILL.md`, `scripts/`, `references/`, `requirements.txt`, `LICENSE`, `NOTICE` and `UPSTREAM.md` together; a single Markdown download is insufficient.
@@ -121,16 +114,15 @@ For manual copies or release archives, the target directory must be named `china
 If the host installs the skill read-only, create the virtualenv in a writable location and always use that interpreter. Without a local `.venv`, scripts use the calling Python as-is:
 
 ```bash
-python3 -m venv ~/.venvs/china-market-data
-PIP_USER=0 ~/.venvs/china-market-data/bin/python -m pip install -r <skill-dir>/requirements.txt
+python3 <skill-dir>/tools/setup_env.py --venv ~/.venvs/china-market-data
 ~/.venvs/china-market-data/bin/python <skill-dir>/scripts/run.py --check
 ```
 
-On Windows: `py -3 -m venv $env:USERPROFILE\.venvs\china-market-data`, interpreter under `Scripts\python.exe`. Result files write to the current directory; run from a writable location or pass `--output`.
+On Windows: `py -3 <skill-dir>\tools\setup_env.py --venv $env:USERPROFILE\.venvs\china-market-data`, with the interpreter under `Scripts\python.exe`. Result files write to the current directory; run from a writable location or pass `--output`.
 
 ### Using with AI assistants
 
-Prefer `npx skills add`, which detects hosts such as Cursor, Claude Code and Codex and installs to the appropriate location. For a manual fallback, copy the entire directory into a host-supported skill path. Other assistants must be able to read skill files and run local Python. Chat-only environments cannot fetch data directly.
+Prefer `npx --yes skills@latest add`, which detects hosts such as Cursor, Claude Code and Codex and installs to the appropriate location. For a manual fallback, copy the entire directory into a host-supported skill path. Other assistants must be able to read skill files and run local Python. Chat-only environments cannot fetch data directly.
 
 The skill does not depend on a specific agent ID or `CLAUDE.md`. Any `CLAUDE.md` is optional research guidance, not required to run CLIs. Update scripts and docs together; separately installed agent copies do not sync automatically.
 
@@ -172,15 +164,16 @@ The iwencai entry requires your own `IWENCAI_API_KEY`; see [prerequisites](SKILL
 
 ## Development
 
-Develop against a Git checkout that retains the upstream baseline commit; skill ZIP packages omit the test suite.
+Run development checks from a Git checkout of this repository; release skill ZIP packages omit the test suite.
 
 ```bash
-.venv/bin/python -m unittest discover -s tests
-.venv/bin/python tests/audit_installed_bundle.py
+python3 -m compileall -q scripts tools tests
+python3 -m unittest discover -s tests -v
 python3 tools/build_release.py
+npx --yes skills@latest add . --list
 ```
 
-Some tests need full Git history; shallow clones or GitHub auto-generated source archives may fail those checks. Optional live tests are skipped by default; offline pass does not prove providers are available now. See [CONTRIBUTING.md](CONTRIBUTING.md) and [docs/PUBLISHING.md](docs/PUBLISHING.md).
+These checks do not request live market data; an offline pass does not prove providers are currently available. GitHub Actions repeats compilation, smoke tests, Skills CLI discovery and bundle verification on pushes and pull requests. See [CONTRIBUTING.md](CONTRIBUTING.md) and [docs/PUBLISHING.md](docs/PUBLISHING.md).
 
 ## License
 

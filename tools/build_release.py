@@ -5,8 +5,9 @@ from pathlib import Path
 import zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
-ROOT_FILES = ('SKILL.md', 'requirements.txt', 'LICENSE', 'NOTICE', 'UPSTREAM.md',
-              'README.md', 'README_en.md', 'CHANGELOG.md', 'CONTRIBUTING.md', 'SECURITY.md')
+ROOT_FILES = ('.meta.json', 'SKILL.md', 'requirements.txt', 'LICENSE', 'NOTICE',
+              'UPSTREAM.md', 'README.md', 'README_en.md', 'CHANGELOG.md',
+              'CONTRIBUTING.md', 'SECURITY.md', 'CITATION.cff')
 
 
 def build(root=ROOT):
@@ -20,8 +21,8 @@ def build(root=ROOT):
     files += sorted((root / 'references').glob('*.md'))
     files += [root / name for name in ('docs/PUBLISHING.md',
                'docs/source-integration-v3.8.0.md', 'docs/source-integration-v3.9.0.md')]
-    # Include build instructions' target so the archive can be repackaged.
-    files += [root / 'tools/build_release.py']
+    # Include environment setup and build tooling so the archive is self-contained.
+    files += [root / 'tools/build_release.py', root / 'tools/setup_env.py']
     for path in files:
         if not path.is_file():
             raise ValueError(f'Missing or symlinked release input: {path}')

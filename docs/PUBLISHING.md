@@ -5,11 +5,18 @@
 ## 发布前
 
 - 保留 LICENSE、NOTICE、UPSTREAM.md 与衍生文件修改说明。
-- 使用保留上游基准提交的 Git 历史。测试引用 `f814dcfe209dd7958f4858f9d878d591ee85fb56`；不要创建只有当前文件的新根提交。
+- 在 UPSTREAM.md 记录上游基准提交 `f814dcfe209dd7958f4858f9d878d591ee85fb56`；发布仓库不宣称包含完整上游 Git 历史。
 - 复查 `git status --short` 和实际暂存区，避免 `git add .` 不加检查。确认 `.env`、`.venv`（包括符号链接）、reports、缓存和本地凭据没有进入提交。
 - 扫描工作区、待发布 Git 历史和 ZIP；若发现真实秘密，先撤销，再决定历史清理。忽略规则不能清除已跟踪文件。
-- 按 README 运行测试和安装隔离审计。标明跳过的实时测试、已验证平台及当前接口限制。
+- 确认 SKILL.md metadata、`.meta.json`、CITATION、CHANGELOG 和 Git tag 使用同一项目版本；上游能力版本单独记录。
+- 按 README 运行编译、离线 smoke tests、Skills CLI 发现和安装隔离审计。标明跳过的实时测试、已验证平台及当前接口限制。
 - 更新 CHANGELOG 的衍生版本记录。不要把上游历史版本当成自己的 Release。
+
+```bash
+python3 -m compileall -q scripts tools tests
+python3 -m unittest discover -s tests -v
+npx --yes skills@latest add . --list
+```
 
 ## 构建
 
@@ -19,14 +26,14 @@
 python3 tools/build_release.py
 ```
 
-输出 `dist/china-market-data.zip` 与 SHA-256 文件。构建使用允许清单，包含技能、运行脚本、reference、依赖声明、许可证和用户文档；不包含 tests、Git 历史、可选 CLAUDE.md、assets、虚拟环境或运行记录。脚本拒绝被选中文件中的符号链接。
+输出 `dist/china-market-data.zip` 与 SHA-256 文件。构建使用允许清单，包含技能、运行脚本、reference、环境初始化工具、依赖声明、元数据、许可证和用户文档；不包含 tests、Git 历史、assets、虚拟环境或运行记录。脚本拒绝被选中文件中的符号链接。
 
 解压到新目录验证相对路径和 `--help`；完整取数需要在目标机器准备依赖和网络。不要把本机 `.venv` 一起打包。
 
 ## 创建公开仓库与 Release
 
-建议在 GitHub Fork 上游后改名为 china-market-data，或创建保留历史的衍生仓库。目标账号和仓库地址由维护者决定；不要直接向上游 origin 推送。确认目标后再配置自己的 origin，保留上游为 upstream。
+目标仓库是 `clawyi-com/china-market-data`；不要直接向上游 origin 推送。来源基准与修改范围以 UPSTREAM.md 为准。
 
 正式仓库启用 Issues、选择私有漏洞报告设置，并核对赞助入口和维护者联系方式。当前项目未声明维护者私人邮箱，也不自动开启这些远端设置。
 
-将本地已验证的提交推送后，再从该提交打标签、创建 Release，附上技能 ZIP 和校验文件。Release 说明应列出改动、兼容性变化、运行要求和验证结果。GitHub自动源码ZIP与技能ZIP用途不同：前者没有Git历史，部分迁移测试无法运行。
+将本地已验证的提交推送后，再从同一提交打标签、创建 Release，附上 `china-market-data.zip` 和 `china-market-data.zip.sha256`。Release 说明应把 `npx skills@latest add clawyi-com/china-market-data -g` 作为首选安装方式，并列出改动、兼容性变化、Python 依赖与验证结果。GitHub 自动源码 ZIP 与技能 ZIP 用途不同：用户安装优先使用 Skills CLI 或正式技能 ZIP。

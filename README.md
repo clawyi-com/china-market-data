@@ -28,7 +28,7 @@
 
 ```bash
 # 自动识别 Cursor、Claude Code、Codex 等宿主并安装
-npx skills add clawyi-com/china-market-data -g
+npx --yes skills@latest add clawyi-com/china-market-data -g
 ```
 
 安装后可直接向 AI 助手提问，例如“查询贵州茅台实时行情”“获取沪深 300 最近一年 K 线”。腾讯报价等标准库入口无需额外 Python 包；使用完整数据能力前，再按[安装 Python 依赖](#2-安装-python-依赖)创建虚拟环境。
@@ -58,42 +58,37 @@ npx skills add clawyi-com/china-market-data -g
 
 ### 1. 安装 Skill（推荐）
 
-需要 Node.js / npm。Skills CLI 以 GitHub 为技能来源，不要求本仓库发布 npm 包：
+需要 Node.js 22.20+ / npm。Skills CLI 以 GitHub 为技能来源，不要求本仓库发布 npm 包；显式使用 `skills@latest` 可避开旧版全局目录兼容问题：
 
 ```bash
 # 交互式全局安装，自动识别已安装的 Agent
-npx skills add clawyi-com/china-market-data -g
+npx --yes skills@latest add clawyi-com/china-market-data -g
 
 # 指定宿主并跳过确认
-npx skills add clawyi-com/china-market-data -g -y --agent cursor
+npx --yes skills@latest add clawyi-com/china-market-data -g -y --agent cursor
 
 # 只查看仓库中可安装的技能
-npx skills add clawyi-com/china-market-data --list
+npx --yes skills@latest add clawyi-com/china-market-data --list
 ```
 
 支持的安装源可在 [skills.sh](https://skills.sh/clawyi-com/china-market-data/china-market-data) 查看。默认不加 `-g` 时安装到当前项目；加 `-g` 后全局可用。Skills CLI 只安装 `SKILL.md`、`scripts/` 和 `references/` 等技能文件，不会自动安装 Python 依赖。
 
 ### 2. 安装 Python 依赖
 
-需要 Python 3.9+；建议使用已验证的 Python 3.12。`npx skills` 全局安装的规范副本默认位于 `~/.agents/skills/china-market-data`。
+需要 Python 3.9+；建议使用已验证的 Python 3.12。环境初始化脚本会创建技能专用 `.venv`、安装依赖并执行离线检查。`npx skills` 全局安装的规范副本默认位于 `~/.agents/skills/china-market-data`。
 
 macOS / Linux：
 
 ```bash
 SKILL_DIR="$HOME/.agents/skills/china-market-data"
-python3 -m venv "$SKILL_DIR/.venv"
-PIP_USER=0 "$SKILL_DIR/.venv/bin/python" -m pip install -r "$SKILL_DIR/requirements.txt"
-"$SKILL_DIR/.venv/bin/python" "$SKILL_DIR/scripts/run.py" --check
+python3 "$SKILL_DIR/tools/setup_env.py"
 ```
 
 Windows PowerShell：
 
 ```powershell
 $SkillDir = "$env:USERPROFILE\.agents\skills\china-market-data"
-py -3 -m venv "$SkillDir\.venv"
-$env:PIP_USER = "0"
-& "$SkillDir\.venv\Scripts\python.exe" -m pip install -r "$SkillDir\requirements.txt"
-& "$SkillDir\.venv\Scripts\python.exe" "$SkillDir\scripts\run.py" --check
+py -3 "$SkillDir\tools\setup_env.py"
 ```
 
 `--check` 检查全部列出的依赖，不请求行情。部分功能只需少量依赖；例如腾讯报价仅用标准库，可以直接运行而不安装全部包。依赖使用版本范围，尚未为所有系统锁定完整依赖组合；Windows 命令未经过完整平台实测。
@@ -109,9 +104,7 @@ Windows 通常没有 `python3` 命令，下文示例中的 `python3` 请换成 `
 ```bash
 git clone https://github.com/clawyi-com/china-market-data.git
 cd china-market-data
-python3 -m venv .venv
-PIP_USER=0 .venv/bin/python -m pip install -r requirements.txt
-python3 scripts/run.py --check
+python3 tools/setup_env.py
 ```
 
 手动复制或解压时，目标目录必须命名为 `china-market-data`，并保留 `SKILL.md`、`scripts/`、`references/`、`requirements.txt`、`LICENSE`、`NOTICE` 和 `UPSTREAM.md`；不能只复制一个 Markdown 文件。
@@ -121,16 +114,15 @@ python3 scripts/run.py --check
 宿主把技能装在只读位置时无法创建 `.venv`。可把虚拟环境建在可写位置，之后一律用该解释器运行脚本；技能目录内没有 `.venv` 时，脚本直接使用调用它的 Python，不会切换：
 
 ```bash
-python3 -m venv ~/.venvs/china-market-data
-PIP_USER=0 ~/.venvs/china-market-data/bin/python -m pip install -r <技能目录>/requirements.txt
+python3 <技能目录>/tools/setup_env.py --venv ~/.venvs/china-market-data
 ~/.venvs/china-market-data/bin/python <技能目录>/scripts/run.py --check
 ```
 
-Windows 对应为 `py -3 -m venv $env:USERPROFILE\.venvs\china-market-data`，解释器位于其中的 `Scripts\python.exe`。结果文件写到当前目录，请在可写目录下运行，或用 `--output` 指定可写路径。
+Windows 对应为 `py -3 <技能目录>\tools\setup_env.py --venv $env:USERPROFILE\.venvs\china-market-data`，解释器位于其中的 `Scripts\python.exe`。结果文件写到当前目录，请在可写目录下运行，或用 `--output` 指定可写路径。
 
 ### 在 AI 助手中使用
 
-优先用 `npx skills add` 自动识别 Cursor、Claude Code、Codex 等宿主并安装到正确位置。需要手动安装时，再把整个目录复制到宿主支持的技能目录；其他助手需要能读取技能文件并执行本地 Python。仅支持聊天、不能执行脚本的环境不能直接取数。
+优先用 `npx --yes skills@latest add` 自动识别 Cursor、Claude Code、Codex 等宿主并安装到正确位置。需要手动安装时，再把整个目录复制到宿主支持的技能目录；其他助手需要能读取技能文件并执行本地 Python。仅支持聊天、不能执行脚本的环境不能直接取数。
 
 技能本身不依赖可易、某个 agent ID 或 `CLAUDE.md`。仓库中的 `CLAUDE.md` 是可选研究助手指引，不是执行 CLI 的必要条件。更新时同时更新脚本与文档；各 agent 的独立安装副本不会自动同步。
 
@@ -172,15 +164,16 @@ iwencai 入口需要用户自己的 `IWENCAI_API_KEY`；配置方法见 [技能�
 
 ## 开发与验证
 
-开发使用保留上游基准提交的 Git 检出；技能 ZIP 不含测试套件。
+开发验证使用当前仓库的 Git 检出；正式技能 ZIP 不含测试套件。
 
 ```bash
-.venv/bin/python -m unittest discover -s tests
-.venv/bin/python tests/audit_installed_bundle.py
+python3 -m compileall -q scripts tools tests
+python3 -m unittest discover -s tests -v
 python3 tools/build_release.py
+npx --yes skills@latest add . --list
 ```
 
-部分测试依赖完整 Git 历史，浅克隆或 GitHub 自动生成的源码压缩包可能无法运行这些检查。可选实时测试默认跳过；离线测试通过不证明上游此刻可用。贡献规则见 [CONTRIBUTING.md](CONTRIBUTING.md)，发布检查见 [docs/PUBLISHING.md](docs/PUBLISHING.md)。
+这些检查不请求实时行情；离线测试通过不证明上游数据源此刻可用。GitHub Actions 会在 push 和 pull request 上重复执行编译、smoke tests、Skills CLI 发现与发布包校验。贡献规则见 [CONTRIBUTING.md](CONTRIBUTING.md)，发布检查见 [docs/PUBLISHING.md](docs/PUBLISHING.md)。
 
 ## 许可证与致谢
 

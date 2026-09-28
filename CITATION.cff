@@ -11,7 +11,7 @@ abstract: >-
   China A-share, ETF, futures and macro market-data skill/CLI for AI assistants
   and Python users. Independently maintained Apache-2.0 derivative of a-stock-data.
 license: Apache-2.0
-version: 0.0.3
+version: 0.0.4
 date-released: "2026-09-28"
 keywords:
   - china

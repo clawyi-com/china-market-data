@@ -2,7 +2,7 @@
 
 <!-- Modified by china-market-data contributors: derivative section added; upstream history retained. -->
 
-## china-market-data — Unreleased
+## china-market-data v0.0.4 — 2026-09-28
 
 独立衍生版本；来源基准见 [UPSTREAM.md](UPSTREAM.md)。
 
@@ -10,6 +10,9 @@
 - 行业完整分页、板块涨幅入口、缺失值与报价时间修复。
 - 重写中英文 README，保留上游许可与署名，补充来源、贡献与发布说明。
 - 兼容性：行业 total 为源总数，top_n 必须为正整数；腾讯报价新增时间元数据。
+- 支持通过 `npx skills@latest add clawyi-com/china-market-data` 从 GitHub 安装。
+- 增加跨平台环境初始化脚本、离线 smoke tests、GitHub Actions 和可校验的技能 ZIP。
+- 统一 `.meta.json`、Agent Skills metadata、CITATION 与 GitHub Release 版本。
 
 以下为上游历史记录，版本号和历史可用性描述属于对应时期。
 
