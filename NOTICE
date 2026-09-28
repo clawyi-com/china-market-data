@@ -1,0 +1,15 @@
+china-market-data
+
+This distribution contains material derived from a-stock-data:
+https://github.com/simonlin1212/a-stock-data
+Copyright 2026 Simon Lin
+Licensed under the Apache License, Version 2.0.
+
+The upstream license and copyright statement are retained in LICENSE.
+The provenance baseline and derivative changes are documented in UPSTREAM.md.
+The refactoring, additional CLIs, runtime support, validation and documentation
+changes are maintained independently by the china-market-data contributors.
+No endorsement by the upstream author or data providers is implied.
+
+This notice concerns software and documentation. It does not grant rights to
+third-party market data, research reports, news or other fetched content.

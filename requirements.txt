@@ -1,0 +1,9 @@
+requests>=2.28,<3
+pandas>=2,<4
+numpy>=1.24,<3
+stockstats>=0.6,<1
+baostock>=0.8,<1
+mootdx>=0.10,<1
+xlrd>=2,<3
+openpyxl>=3.1,<4
+lxml>=4.9,<7
