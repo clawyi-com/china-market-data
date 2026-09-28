@@ -1,11 +1,42 @@
 <!-- Modified by china-market-data contributors: rewritten for this derivative distribution. See UPSTREAM.md. -->
 # china-market-data · 中国市场数据
 
+[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
+[![Python](https://img.shields.io/badge/python-3.9%2B-green.svg)](requirements.txt)
+[![Release](https://img.shields.io/github/v/release/clawyi-com/china-market-data?include_prereleases&label=release)](https://github.com/clawyi-com/china-market-data/releases)
+[![Repo](https://img.shields.io/badge/github-clawyi--com%2Fchina--market--data-111111.svg)](https://github.com/clawyi-com/china-market-data)
+
 [English](README_en.md) · [技能入口](SKILL.md) · [来源与修改说明](UPSTREAM.md) · [Apache-2.0](LICENSE)
 
-面向 AI 助手和 Python 用户的中国证券市场取数工具。将用户的数据需求映射到可执行 CLI，并说明数据时间、覆盖范围、字段含义和失败后的降级方式。
+**`clawyi-com/china-market-data`** 是面向 AI 助手与 Python 用户的中国证券市场取数 Skill / CLI：覆盖 A 股、指数、ETF、期货与宏观等数据，把自然语言需求映射到可执行命令，并标明时间戳、覆盖范围、字段含义和失败降级方式。
 
-本项目基于 [a-stock-data](https://github.com/simonlin1212/a-stock-data) 开发，沿用 Apache-2.0 许可证，由本项目贡献者独立维护。上游作者不为本衍生版本提供背书或维护承诺。来源基准、保留声明和主要改动见 [UPSTREAM.md](UPSTREAM.md) 与 [NOTICE](NOTICE)。
+> 这不是投顾建议，也不是付费数据商 SDK。本仓库是 [a-stock-data](https://github.com/simonlin1212/a-stock-data) 的独立维护衍生版（Apache-2.0）。上游作者不背书本衍生版本。同名 skill 若出现在其他项目中，请以本仓库全名 `clawyi-com/china-market-data` 为准。
+
+## 目录
+
+- [30 秒开始](#30-秒开始)
+- [能做什么](#能做什么)
+- [本版本的改进](#本版本的改进)
+- [安装](#安装)
+- [快速使用](#快速使用)
+- [数据边界](#数据边界)
+- [开发与验证](#开发与验证)
+- [许可证与致谢](#许可证与致谢)
+
+## 30 秒开始
+
+```bash
+git clone https://github.com/clawyi-com/china-market-data.git ~/.claude/skills/china-market-data
+cd ~/.claude/skills/china-market-data
+python3 -m venv .venv
+PIP_USER=0 .venv/bin/python -m pip install -r requirements.txt
+python3 scripts/run.py --check
+
+# 标准库即可：上证指数 / 平安银行 / 沪深300 ETF
+python3 scripts/tencent_quote.py sh000001 sz000001 510300
+```
+
+目标目录必须命名为 `china-market-data`，与 `SKILL.md` 中的 `name` 一致，否则部分 Agent Skills 宿主可能加载失败或注册成错误名称。
 
 ## 能做什么
 
@@ -32,12 +63,10 @@
 
 需要 Python 3.9+；建议使用已验证的 Python 3.12。安装 Python 包时需要访问包源，实际取数时需要访问相应数据源。
 
-将技能发布包解压为 `china-market-data/`，或使用保留历史的仓库检出。必须保留 `SKILL.md`、`scripts/`、`references/`、`requirements.txt`、`LICENSE`、`NOTICE` 和 `UPSTREAM.md`，不能只复制一个 Markdown 文件。
-
-使用 `git clone` 时，目标目录须命名为 `china-market-data`，与 `SKILL.md` 中的 `name` 一致。Agent Skills 约定技能名与所在目录名相同，直接克隆得到的默认目录名 `a-stock-data` 可能导致宿主无法加载或以错误名称注册：
+将技能发布包解压为 `china-market-data/`，或使用本仓库检出。必须保留 `SKILL.md`、`scripts/`、`references/`、`requirements.txt`、`LICENSE`、`NOTICE` 和 `UPSTREAM.md`，不能只复制一个 Markdown 文件。
 
 ```bash
-git clone <本项目仓库地址> ~/.claude/skills/china-market-data
+git clone https://github.com/clawyi-com/china-market-data.git ~/.claude/skills/china-market-data
 ```
 
 macOS / Linux，在技能根目录执行：

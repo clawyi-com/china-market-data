@@ -1,0 +1,34 @@
+name: Data source failure
+description: Provider endpoint blocked, changed, empty, or delayed
+title: "[data-source] "
+labels: ["data-source"]
+body:
+  - type: input
+    id: script
+    attributes:
+      label: Script / command
+      placeholder: scripts/tencent_quote.py ...
+    validations:
+      required: true
+  - type: input
+    id: provider
+    attributes:
+      label: Provider / host
+      placeholder: qt.gtimg.cn / eastmoney / ...
+    validations:
+      required: true
+  - type: textarea
+    id: symptom
+    attributes:
+      label: Symptom
+      description: HTTP status, empty payload, schema change, rate limit, etc.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence
+      description: Timestamp, sample response (redact secrets), and whether fallback worked
+      render: shell
+    validations:
+      required: true
