@@ -9,17 +9,21 @@
 
 [简体中文](README.md) · [Skill entry point](SKILL.md) · [Provenance](UPSTREAM.md) · [Apache-2.0](LICENSE)
 
-**`clawyi-com/china-market-data`** is a **China stock data skill** for Chinese-market users: A-share quotes, K-line, ticks, research reports, fund flow, announcements, ETFs, futures and macro data, exposed to Claude Code / AI agents / Python CLI with timestamps, coverage, fields and fallback notes.
+**`clawyi-com/china-market-data`** is a **China stock data skill** that lets Cursor, Claude Code, Codex and other AI agents run bundled Python CLIs to fetch real A-share quotes, research reports, fund flows, announcements, limit-up boards, options, futures and macro data, with timestamps, coverage limits and fallback notes.
+
+**15 capability layers · 87 endpoints (including 5 fallbacks) · 34 data sources · no API key needed except iwencai**
 
 > This is not investment advice and not a paid market-data vendor SDK.
 
 ## Contents
 
 - [30-second start](#30-second-start)
-- [Coverage](#coverage)
-- [Changes from upstream](#changes-from-upstream)
+- [Ask your agent](#ask-your-agent)
+- [Why this skill](#why-this-skill)
+- [The 15 layers](#the-15-layers)
+- [Data sources](#data-sources)
 - [Installation](#installation)
-- [Quick usage](#quick-usage)
+- [Command-line usage](#command-line-usage)
 - [Data boundaries](#data-boundaries)
 - [Development](#development)
 - [License](#license)
@@ -31,51 +35,88 @@
 npx --yes skills@latest add clawyi-com/china-market-data -g
 ```
 
-After installation, ask your AI assistant questions such as “fetch the latest Kweichow Moutai quote” or “get one year of CSI 300 candles.” Standard-library endpoints such as Tencent quotes need no extra Python packages. Set up the [Python dependencies](#2-install-python-dependencies) before using the full data-source catalog.
+Then ask your AI assistant directly. Standard-library endpoints such as Tencent quotes need no extra Python packages; run the [setup script](#2-install-python-dependencies) once before using the full catalog.
 
-## Coverage
+## Ask your agent
 
-| Area | Examples |
+| You want | Ask something like |
 | --- | --- |
-| Prices | Stock, index and ETF quotes; candles, ticks, daily packages and adjustment factors |
-| Market signals | Strong stocks and source theme labels, board membership, price rankings, fund flows, trading disclosures and price-limit activity |
-| Company research | Reports, announcements, financial statements, valuation, shareholders, dividends, lockups and events |
-| Related markets | Macro and rates, index constituents and calendars, futures, commodities, ETF options and convertible bonds |
+| Quotes and valuation | “Kweichow Moutai's price, PE, PB, market cap and turnover right now” |
+| Historical candles | “One year of forward-adjusted daily candles for CATL” |
+| Limit-up sentiment | “Today's limit-up pool, consecutive-board ladder and failed-board rate” |
+| Hot themes | “Which stocks are strong today and what themes are they tagged with” |
+| Fund flows | “Northbound minute flows today”, “Concept boards ranked by 5-day main-force inflow” |
+| Dragon-tiger list | “Today's market-wide dragon-tiger net buying, plus the broker seats for one stock” |
+| Research | “Recent broker reports and consensus EPS for BYD” |
+| Announcements and IR | “Latest announcement PDFs for a company”, “How did the company answer this rumor on the IR Q&A platform” |
+| Options | “300ETF option chain, implied volatility and Greeks” |
+| Futures and commodities | “Rebar main-continuous daily candles”, “SHFE top-20 open-interest members” |
+| Macro and rates | “Latest LPR, FR007 and the ChinaBond treasury yield curve” |
+| Events and convertibles | “IPO subscriptions this week”, “Convertible bond conversion premiums” |
+| Backtest preparation | “Convert these codes to JoinQuant format and fetch historical Shenwan industry membership” |
 
-Consult the routing table in [SKILL.md](SKILL.md) and its linked references for exact markets, dates and parameters. Capability names do not imply complete coverage.
+The skill is not loaded for concept explanations or opinion discussions that need no data.
 
-## Changes from upstream
+## Why this skill
 
-- Executable scripts and focused reference documents replace embedded implementations in a long skill document.
-- CLI interfaces, output protection, environment checks and a skill-local virtual environment.
-- Complete-page validation for industry rankings, with separate commands for price changes and fund flows.
-- Source and time metadata, and explicit treatment of missing values versus zero.
-- Frozen upstream fixtures and regression tests for migrations and intentional fixes.
+- **Built for agents**: data endpoints ship as CLIs with `--help`; SKILL.md contains an endpoint routing table so the agent reads only the section it needs.
+- **Keyless by default**: every endpoint except iwencai semantic search works without registration or API keys.
+- **Official and stable sources first**: Tencent, exchanges, ChinaBond and the PBoC are preferred; East Money calls are throttled, and a fallback table covers primary-source failures.
+- **Verifiable results**: quote source, quote time and fetch time are kept, missing values are distinct from real zeros, and failures are reported instead of returning empty data as success.
+- **Runs locally**: data goes straight from each source to JSON files on your machine, with no third-party relay service.
 
-These changes do not guarantee provider availability or certify every AI host.
+Compared with Python data libraries such as akshare or tushare, this project is a skill package for AI agents: routing, parameters, data limits and fallbacks are written for the agent to read.
+
+## The 15 layers
+
+| Layer | Capabilities | Main sources |
+| --- | --- | --- |
+| 1 Prices | Live quotes (PE/PB/market cap/limit prices), daily/weekly/monthly adjusted and 1–60 min candles, ticks, market-wide daily packages, adjustment factors | Tencent, TDX, Baidu, Sina |
+| 2 Research | Stock/industry reports and PDFs, ratings, consensus EPS, natural-language report search | East Money, THS, Sina, iwencai |
+| 3 Signals | Strong stocks and themes, northbound flows, board membership, minute fund flows, dragon-tiger seats, lock-up expiries, industry and board rankings | THS, East Money |
+| 4 Funds and chips | Margin trading, block trades, shareholder counts, dividends, daily fund flows, chip distribution, ETF shares | East Money, SSE, SZSE, local model |
+| 5 News | Stock news, CLS telegraph, global 7×24 feeds, CCTV Xinwen Lianbo transcripts | East Money, CLS, Wallstreetcn, CCTV |
+| 6 Fundamentals | Financial statements, F10, valuation history, listing/delisting, Shenwan industry history, ST list | Sina, TDX, baostock, Shenwan, East Money |
+| 7 Announcements | Announcement search and PDF download | CNINFO |
+| 8 Limit-up boards | Limit-up/failed/limit-down pools, limit-up reasons, board ladder and failure rate, watch list, unusual moves | East Money, THS |
+| 9 ETF options | Contract list, option chain, Delta/Gamma/Theta/Vega, implied volatility | Sina |
+| 10 Sentiment and IR | SZSE Hudongyi, SSE e-Interaction, THS and East Money popularity lists | CNINFO, SSE, THS, East Money |
+| 11 Macro and rates | Social financing, PMI, ChinaBond yield curves, repo fixing rates, LPR, global macro calendar | PBoC, NBS, ChinaBond, CFETS |
+| 12 Indexes and calendar | Index constituents and weights, index PE and dividend yield, official trading calendar | CSI, CNI, SZSE |
+| 13 Futures and commodities | Daily data from five futures exchanges, commodity and index options, position rankings, live futures, A50, Shanghai Gold | Futures exchanges, Sina, SGE |
+| 14 Corporate events | Earnings previews, institutional surveys, insider trades, buybacks, share pledges, IPO subscriptions | East Money |
+| 15 Convertible bonds | Terms, conversion value, conversion premium | East Money |
+
+Local tools also cover ticker normalization, JoinQuant code conversion and valuation. See the [SKILL.md routing table](SKILL.md#端点路由速查按需定位不必通读全文) for every endpoint, parameter and market limit; availability of a data type does not imply coverage of every market or date.
+
+## Data sources
+
+Tencent Finance · East Money · Tonghuashun (THS) · Sina Finance · Baidu · TDX · CNINFO · CLS · Wallstreetcn · CCTV · baostock · Shenwan · iwencai · SSE · SZSE · SHFE · INE · CZCE · GFEX · CFFEX · Shanghai Gold Exchange · CSI · CNI · ChinaBond · CFETS · PBoC · National Bureau of Statistics
+
+See [sources and fallbacks](references/sources-and-fallbacks.md) for each endpoint's purpose, limits and fallback relationships.
 
 ## Installation
 
 ### 1. Install the skill (recommended)
 
-Node.js 22.20+ / npm is required. The Skills CLI uses GitHub as the skill source; this repository does not need to be published as an npm package. Explicitly selecting `skills@latest` avoids older global-directory compatibility bugs:
+Requires Node.js 22.20+ / npm. The Skills CLI installs directly from the GitHub repository; no npm package is needed. Using `skills@latest` explicitly avoids older global-directory issues:
 
 ```bash
 # Interactive global install; detects installed agents
 npx --yes skills@latest add clawyi-com/china-market-data -g
 
-# Target one host and skip confirmation
+# Install for one host without prompts
 npx --yes skills@latest add clawyi-com/china-market-data -g -y --agent cursor
 
-# Inspect available skills without installing
+# List installable skills in this repository
 npx --yes skills@latest add clawyi-com/china-market-data --list
 ```
 
-See the installable skill on [skills.sh](https://skills.sh/clawyi-com/china-market-data/china-market-data). Without `-g`, installation is scoped to the current project; `-g` makes it available globally. The Skills CLI installs files such as `SKILL.md`, `scripts/` and `references/`; it does not install Python dependencies.
+Also listed on [skills.sh](https://skills.sh/clawyi-com/china-market-data/china-market-data). Without `-g` the skill installs into the current project; with `-g` it is global. The Skills CLI copies the repository files except `.git` (including `tools/setup_env.py`) but does not install Python dependencies.
 
 ### 2. Install Python dependencies
 
-Python 3.9+ is required; Python 3.12 is the tested recommendation. The setup script creates a skill-local `.venv`, installs dependencies and runs an offline check. The canonical copy from a global `npx skills` install is normally at `~/.agents/skills/china-market-data`.
+Requires Python 3.9+. The setup script creates a skill-local `.venv`, installs dependencies and runs an offline check. A global install is normally at `~/.agents/skills/china-market-data`.
 
 macOS / Linux:
 
@@ -91,15 +132,15 @@ $SkillDir = "$env:USERPROFILE\.agents\skills\china-market-data"
 py -3 "$SkillDir\tools\setup_env.py"
 ```
 
-The check imports all listed dependencies without requesting market data. Standard-library-only commands such as Tencent quotes do not require the entire dependency set. Requirements are version ranges, not a complete cross-platform lockfile. Windows has not been fully tested.
+> **Re-run setup after updates**: `npx skills update` or a reinstall replaces the whole skill directory, including its `.venv`. Run `setup_env.py` again after updating, or keep the virtual environment outside the skill directory as described below.
 
-Most business CLIs use the skill-local `.venv`; `run.py` can also launch scripts. Dependencies are not installed automatically and the global Python is not modified. When importing as a library, the caller chooses the interpreter. Recreate `.venv` after moving directories or machines; do not copy an existing virtualenv.
+`--check` covers every listed dependency and does not request market data. Standard-library endpoints such as Tencent quotes run without the full dependency set. Dependencies use version ranges and are not locked for every platform; the Windows commands have not been fully tested on Windows.
 
-Windows usually lacks `python3`; replace `python3` below with `py -3`, or `python` if the launcher is unavailable. When the output encoding cannot represent Chinese (for example cp1252 on English Windows pipes), scripts switch to UTF-8 output and consumers should decode as UTF-8.
+Business CLIs and `run.py` switch to the skill-local `.venv` automatically; they never install packages or modify global Python. When importing as a Python library, the caller chooses the interpreter. Recreate `.venv` after moving directories or machines instead of copying it. On Windows, replace `python3` below with `py -3` (or `python` without the py launcher); scripts switch to UTF-8 when the output stream cannot encode Chinese.
 
-### 3. Developer installation
+### 3. Developer install
 
-Use a Git checkout when modifying code or retaining complete history:
+To modify code or keep full Git history:
 
 ```bash
 git clone https://github.com/clawyi-com/china-market-data.git
@@ -107,26 +148,24 @@ cd china-market-data
 python3 tools/setup_env.py
 ```
 
-For manual copies or release archives, the target directory must be named `china-market-data`. Keep `SKILL.md`, `scripts/`, `references/`, `requirements.txt`, `LICENSE`, `NOTICE` and `UPSTREAM.md` together; a single Markdown download is insufficient.
+For manual copies or extracted archives, the target directory must be named `china-market-data` and keep `SKILL.md`, `scripts/`, `references/`, `requirements.txt`, `LICENSE`, `NOTICE` and `UPSTREAM.md`; a single Markdown file is not enough.
 
-### Read-only skill directory
+### Virtual environment outside the skill directory
 
-If the host installs the skill read-only, create the virtualenv in a writable location and always use that interpreter. Without a local `.venv`, scripts use the calling Python as-is:
+If the skill directory is read-only, or you want updates not to rebuild the environment, create the virtual environment elsewhere and always run scripts with that interpreter (without a skill-local `.venv`, scripts use the Python that launched them):
 
 ```bash
 python3 <skill-dir>/tools/setup_env.py --venv ~/.venvs/china-market-data
 ~/.venvs/china-market-data/bin/python <skill-dir>/scripts/run.py --check
 ```
 
-On Windows: `py -3 <skill-dir>\tools\setup_env.py --venv $env:USERPROFILE\.venvs\china-market-data`, with the interpreter under `Scripts\python.exe`. Result files write to the current directory; run from a writable location or pass `--output`.
+On Windows use `py -3 <skill-dir>\tools\setup_env.py --venv $env:USERPROFILE\.venvs\china-market-data`; the interpreter is `Scripts\python.exe` inside it. Result files are written to the current directory, so run from a writable directory or pass `--output`.
 
-### Using with AI assistants
+### Host requirements
 
-Prefer `npx --yes skills@latest add`, which detects hosts such as Cursor, Claude Code and Codex and installs to the appropriate location. For a manual fallback, copy the entire directory into a host-supported skill path. Other assistants must be able to read skill files and run local Python. Chat-only environments cannot fetch data directly.
+The host must be able to read skill files and run local Python; chat-only environments cannot fetch data directly. The skill does not depend on a specific agent ID or extra project guidance files. Separately installed agent copies do not sync automatically; update scripts and docs together.
 
-The skill does not depend on a specific agent ID or `CLAUDE.md`. Any `CLAUDE.md` is optional research guidance, not required to run CLIs. Update scripts and docs together; separately installed agent copies do not sync automatically.
-
-## Quick usage
+## Command-line usage
 
 Run from the skill root; use new output filenames.
 
@@ -173,7 +212,7 @@ python3 tools/build_release.py
 npx --yes skills@latest add . --list
 ```
 
-These checks do not request live market data; an offline pass does not prove providers are currently available. GitHub Actions repeats compilation, smoke tests, Skills CLI discovery and bundle verification on pushes and pull requests. See [CONTRIBUTING.md](CONTRIBUTING.md) and [docs/PUBLISHING.md](docs/PUBLISHING.md).
+These checks do not request live market data; an offline pass does not prove providers are currently available. GitHub Actions runs compilation, smoke tests, Skills CLI discovery and bundle verification on pushes and pull requests. See [CHANGELOG.md](CHANGELOG.md), [CONTRIBUTING.md](CONTRIBUTING.md) and [docs/PUBLISHING.md](docs/PUBLISHING.md).
 
 ## License
 
